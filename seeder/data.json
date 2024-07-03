@@ -1,0 +1,6 @@
+{
+    "table_columns" : {
+        "data_type": "string",
+        "column_name": "test_column"
+    }
+}
