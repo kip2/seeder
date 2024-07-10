@@ -5,11 +5,29 @@ use serde_json::Value;
 fn main() {
     let (table_columns, table_row) = read_json_file("data.json");
 
-    if let Some(tc) = &table_columns {
-        println!("table_columns: {:?}", tc);
-    }
-    if let Some(tr) = &table_row {
-        println!("table_row: {:?}", tr);
+    let table_columns_value = table_columns.expect("table_columns not found");
+
+    let columns = table_columns_value
+        .as_array()
+        .expect("table_columns is not a valid array");
+
+    let columns_len = columns.len();
+    println!("Length of table_clumns: {}", columns_len);
+
+    let table_row_values = table_row.expect("table_row not found");
+
+    let rows = table_row_values
+        .as_array()
+        .expect("table_row is not a valid array");
+
+    let all_rows_have_same_length = rows
+        .iter()
+        .all(|row| row.as_array().expect("Each row should be an array").len() == columns_len);
+
+    if all_rows_have_same_length {
+        println!("All rows have the same number of elements as table_columns.");
+    } else {
+        println!("One or more rows do not have the same number of elements as table_columns.");
     }
 }
 
@@ -17,7 +35,6 @@ fn read_json_file(file_path: &str) -> (Option<Value>, Option<Value>) {
     let mut file = File::open(file_path).expect("File not found");
     let mut data = String::new();
     file.read_to_string(&mut data).expect("Failed to read file");
-    println!("Hello, world!");
 
     let v: Value = serde_json::from_str(&data).unwrap();
 
