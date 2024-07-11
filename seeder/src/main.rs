@@ -31,6 +31,18 @@ fn main() {
     }
 }
 
+/// Read JSON file of sql data.
+///
+/// # Arguments
+/// * `file_path` - JSON file path to be read.
+///
+/// # Returns
+///
+/// ```
+/// (table_folumns: Option<Value>, table_row: Option<Value>)
+///
+/// Tuple of column data and row data to bind to the insert SQL statement from a JSON file.
+/// ```
 fn read_json_file(file_path: &str) -> (Option<Value>, Option<Value>) {
     let mut file = File::open(file_path).expect("File not found");
     let mut data = String::new();
