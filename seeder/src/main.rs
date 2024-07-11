@@ -5,16 +5,21 @@ use serde_json::Value;
 fn main() {
     let (table_columns, table_row) = read_json_file("data.json");
 
-    let table_columns_value = table_columns.expect("table_columns not found");
+    let tf = validate_table_row(&table_columns, &table_row);
+
+    println!("{}", tf);
+}
+
+fn validate_table_row(table_columns: &Option<Value>, table_row: &Option<Value>) -> bool {
+    let table_columns_value = table_columns.as_ref().expect("table_columns not found");
 
     let columns = table_columns_value
         .as_array()
         .expect("table_columns is not a valid array");
 
     let columns_len = columns.len();
-    println!("Length of table_clumns: {}", columns_len);
 
-    let table_row_values = table_row.expect("table_row not found");
+    let table_row_values = table_row.as_ref().expect("table_row not found");
 
     let rows = table_row_values
         .as_array()
@@ -25,9 +30,9 @@ fn main() {
         .all(|row| row.as_array().expect("Each row should be an array").len() == columns_len);
 
     if all_rows_have_same_length {
-        println!("All rows have the same number of elements as table_columns.");
+        true
     } else {
-        println!("One or more rows do not have the same number of elements as table_columns.");
+        false
     }
 }
 
