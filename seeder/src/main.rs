@@ -5,12 +5,27 @@ use serde_json::Value;
 fn main() {
     let (table_columns, table_row) = read_json_file("data.json");
 
-    let tf = validate_table_row(&table_columns, &table_row);
+    let tf = validate_row_column_length(&table_columns, &table_row);
 
     println!("{}", tf);
 }
 
-fn validate_table_row(table_columns: &Option<Value>, table_row: &Option<Value>) -> bool {
+/// Validate that the number of table row data matches the number of table columns.
+///
+/// # Arguments
+///
+/// ```
+/// (table_columns: &Option<Value>, table_row: &Option<Value>)
+/// ```
+///  Tuple of column data and row data to bind to the insert SQL statement.
+///
+/// # Returns
+///
+/// ```
+/// bool
+/// ```
+///
+fn validate_row_column_length(table_columns: &Option<Value>, table_row: &Option<Value>) -> bool {
     let table_columns_value = table_columns.as_ref().expect("table_columns not found");
 
     let columns = table_columns_value
@@ -44,10 +59,10 @@ fn validate_table_row(table_columns: &Option<Value>, table_row: &Option<Value>) 
 /// # Returns
 ///
 /// ```
-/// (table_folumns: Option<Value>, table_row: Option<Value>)
+/// (table_columns: Option<Value>, table_row: Option<Value>)
+/// ```
 ///
 /// Tuple of column data and row data to bind to the insert SQL statement from a JSON file.
-/// ```
 fn read_json_file(file_path: &str) -> (Option<Value>, Option<Value>) {
     let mut file = File::open(file_path).expect("File not found");
     let mut data = String::new();
