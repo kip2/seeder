@@ -6,11 +6,90 @@ fn main() {
     let (table_columns, table_row) = read_json_file("data.json");
 
     let tf = validate_row_column_length(&table_columns, &table_row);
-
-    println!("{}", tf);
 }
 
-fn validate_rows(table_row: &Option<Value>) -> bool {}
+/// カラムのデータタイプが全て、使用して良い型かどうかを判定する
+///
+/// なお、使用して良い型かどうかはハードコードされたvariable_types
+///
+/// - int
+/// - float
+/// - string
+///
+/// JSONデータ側で使用する恣意的なデータ型であり、Rustの型と一致していないことに注意する
+///
+/// #Arguments
+/// ```
+/// table_columns: &Option<Value>
+/// ```
+///
+/// インサート用のテーブルカラムデータ
+/// 型はserde::json::Value
+///
+/// Return
+///
+/// カラムデータに使用を許容されていないデータが入っていないかどうかを判定する
+///
+///
+fn validate_table_columns_type(table_columns: &Option<Value>) -> bool {
+    let variable_types = ["int", "string", "float"];
+
+    let table_columns_value = table_columns.as_ref().unwrap();
+    let columns_data = table_columns_value.as_array().unwrap();
+
+    for data in columns_data {
+        let data_type_str = data.get("data_type").unwrap().as_str().unwrap();
+        if !variable_types.contains(&data_type_str) {
+            return false;
+        }
+    }
+    true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_validate_table_columns_type_valid() {
+        let table_columns = json!([
+            {"column_name":"name", "data_type":"string"},
+            {"column_name":"age", "data_type":"int"},
+            {"column_name":"salary", "data_type":"float"}
+        ]);
+        assert!(validate_table_columns_type(&Some(table_columns)));
+    }
+
+    #[test]
+    fn test_validate_table_columns_type_invalid_type() {
+        let table_columns = json!([
+            {"column_name":"name", "data_type":"string"},
+            // invalid type "integer"
+            {"column_name":"age", "data_type":"integer"},
+            {"column_name":"salary", "data_type":"float"}
+        ]);
+        assert!(!validate_table_columns_type(&Some(table_columns)));
+    }
+
+    #[test]
+    fn test_validate_table_columns_type_missing_data_type() {
+        let table_columns = json!([
+            {"column_name":"name", "data_type":"string"},
+            // missing data type
+            {"column_name":"age"},
+            {"column_name":"salary", "data_type":"float"}
+        ]);
+        let result = std::panic::catch_unwind(|| validate_table_columns_type(&Some(table_columns)));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_table_columns_type_empty_array() {
+        let table_columns = json!([]);
+        assert!(validate_table_columns_type(&Some(table_columns)));
+    }
+}
 
 /// カラムデータの個数と、ロウデータの個数が一致しているかをバリデーションする関数
 ///
@@ -75,7 +154,7 @@ fn validate_row_column_length(table_columns: &Option<Value>, table_row: &Option<
 /// ```
 ///
 /// JSONファイルのカラムデータのタプル。
-/// table_columnsとtable_rowの2つをタプルにして返す
+/// JSONファイルから取得したテーブルカラムとテーブルロウの2つをタプルにして返す
 /// 型はserde::json::Value
 ///
 fn read_json_file(file_path: &str) -> (Option<Value>, Option<Value>) {
