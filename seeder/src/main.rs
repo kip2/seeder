@@ -10,16 +10,25 @@ fn main() {
     println!("{}", tf);
 }
 
-/// Validate that the number of table row data matches the number of table columns.
+fn validate_rows(table_row: &Option<Value>) -> bool {}
+
+/// カラムデータの個数と、ロウデータの個数が一致しているかをバリデーションする関数
+///
+/// なお、DBのテーブルデータのカラム数と一致するかは判定しない
 ///
 /// # Arguments
 ///
 /// ```
 /// (table_columns: &Option<Value>, table_row: &Option<Value>)
 /// ```
-///  Tuple of column data and row data to bind to the insert SQL statement.
+/// インサート用のテーブルカラムデータと、テーブルロウデータのタプルを受け取る
+/// 型はserde::json::Value
 ///
 /// # Returns
+///
+/// カラムデータの個数と、全てのロウデータの個数が一致していればtrueを返す
+///
+/// 一致していなければfalseを返す
 ///
 /// ```
 /// bool
@@ -51,10 +60,13 @@ fn validate_row_column_length(table_columns: &Option<Value>, table_row: &Option<
     }
 }
 
-/// Read JSON file of sql data.
+/// JSONファイルに設定されたインサート用のSQLデータを読み込む関数
 ///
 /// # Arguments
-/// * `file_path` - JSON file path to be read.
+/// ```
+/// file_path: &str
+/// ```
+/// 読み込む対象のJSONファイルパス
 ///
 /// # Returns
 ///
@@ -62,7 +74,10 @@ fn validate_row_column_length(table_columns: &Option<Value>, table_row: &Option<
 /// (table_columns: Option<Value>, table_row: Option<Value>)
 /// ```
 ///
-/// Tuple of column data and row data to bind to the insert SQL statement from a JSON file.
+/// JSONファイルのカラムデータのタプル。
+/// table_columnsとtable_rowの2つをタプルにして返す
+/// 型はserde::json::Value
+///
 fn read_json_file(file_path: &str) -> (Option<Value>, Option<Value>) {
     let mut file = File::open(file_path).expect("File not found");
     let mut data = String::new();
