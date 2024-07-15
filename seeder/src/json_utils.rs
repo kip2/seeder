@@ -1,6 +1,29 @@
 use serde_json::Value;
 use std::{fs::File, io::Read};
 
+/// 渡したjsonファイルについてのバリデーションをまとめて行う関数
+///
+/// # Arguments
+/// ```
+/// json_file_path: &str
+/// ```
+///
+/// jsonファイルのパス
+///
+pub fn validate_json_data(json_file_path: &str) -> bool {
+    let (table_columns, table_row) = read_json_file(json_file_path);
+
+    if !validate_row_column_length(&table_columns, &table_row) {
+        return false;
+    };
+
+    if !validate_table_columns_type(&table_columns) {
+        return false;
+    };
+
+    true
+}
+
 /// カラムのデータタイプが全て、使用して良い型かどうかを判定する
 ///
 /// なお、使用して良い型かどうかはハードコードされたvariable_types
@@ -11,7 +34,7 @@ use std::{fs::File, io::Read};
 ///
 /// JSONデータ側で使用する恣意的なデータ型であり、Rustの型と一致していないことに注意する
 ///
-/// #Arguments
+/// # Arguments
 /// ```
 /// table_columns: &Option<Value>
 /// ```
@@ -19,7 +42,7 @@ use std::{fs::File, io::Read};
 /// インサート用のテーブルカラムデータ
 /// 型はserde::json::Value
 ///
-/// Return
+/// # Return
 ///
 /// カラムデータに使用を許容されていないデータが入っていないかどうかを判定する
 ///
