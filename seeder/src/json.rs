@@ -24,6 +24,8 @@ pub fn validate_json_data(json_file_path: &str) -> bool {
     true
 }
 
+fn tuple_to_string_vector()
+
 /// カラムのデータタイプが全て、使用して良い型かどうかを判定する
 ///
 /// なお、使用して良い型かどうかはハードコードされたvariable_types

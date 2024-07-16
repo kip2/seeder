@@ -1,7 +1,4 @@
-mod json_utils;
-mod sql_utils;
-
-use json_utils::*;
+use seeder::json::*;
 
 fn main() {
     validate_json_data("data.json");
