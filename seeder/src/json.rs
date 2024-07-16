@@ -24,7 +24,34 @@ pub fn validate_json_data(json_file_path: &str) -> bool {
     true
 }
 
-fn tuple_to_string_vector()
+/// JSONから読み込んだタプルを、Vec<String>に変換する関数
+///
+/// # Arguments
+/// ```
+/// table_columns: &Option<Value>, table_row: &Option<Value>
+/// ```
+///
+/// # Return
+/// ```
+/// table_columns: Vec<String>, table_row: Vec<String>
+/// ```
+///
+fn tuple_to_string_vector(
+    table_columns: &Option<Value>,
+    table_row: &Option<Value>,
+) -> (Vec<String>, Vec<String>) {
+    let column_vec = match table_columns {
+        Some(value) => vec![value.to_string()],
+        None => vec!["None".to_string()],
+    };
+
+    let row_vec = match table_row {
+        Some(value) => vec![value.to_string()],
+        None => vec!["None".to_string()],
+    };
+
+    (column_vec, row_vec)
+}
 
 /// カラムのデータタイプが全て、使用して良い型かどうかを判定する
 ///
