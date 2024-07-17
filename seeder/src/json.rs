@@ -36,7 +36,7 @@ pub fn validate_json_data(json_file_path: &str) -> bool {
 /// table_columns: Vec<String>, table_row: Vec<String>
 /// ```
 ///
-fn tuple_to_string_vector(
+pub fn tuple_to_string_vector(
     table_columns: &Option<Value>,
     table_row: &Option<Value>,
 ) -> (Vec<String>, Vec<String>) {
