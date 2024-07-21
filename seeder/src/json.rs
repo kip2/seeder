@@ -19,15 +19,147 @@ pub struct JsonData {
     pub table_rows: Vec<Vec<Value>>,
 }
 
-/// 渡したjsonファイルについてのバリデーションをまとめて行う関数
+fn validate_row_column_count(data: &JsonData) -> bool {
+    let column_count = data.table_columns.len();
+    for (i, row) in data.table_rows.iter().enumerate() {
+        if row.len() != column_count {
+            return false;
+        }
+    }
+    true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_validate_column_count() {
+        let data = JsonData {
+            table_name: "test_table".to_string(),
+            table_columns: vec![
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "name".to_string(),
+                },
+                TableColumn {
+                    data_type: "int".to_string(),
+                    column_name: "age".to_string(),
+                },
+            ],
+            table_rows: vec![
+                vec![json!("Alice"), json!(30)],
+                vec![json!("Bob"), json!(25)],
+            ],
+        };
+
+        assert!(validate_row_column_count(&data));
+    }
+
+    #[test]
+    fn test_validate_column_count_failure() {
+        let data = JsonData {
+            table_name: "test_table".to_string(),
+            table_columns: vec![
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "name".to_string(),
+                },
+                TableColumn {
+                    data_type: "int".to_string(),
+                    column_name: "age".to_string(),
+                },
+            ],
+            table_rows: vec![
+                vec![json!("Alice"), json!(30)],
+                vec![json!("Bob")], // カラム数が一致しない
+            ],
+        };
+
+        assert!(!validate_row_column_count(&data));
+    }
+}
+
+/// JSONファイルに設定されたインサート用のSQLデータを読み込む関数
 ///
-/// # Arguments
+/// JSONファイルのデータ構造は以下の通りである
+///
+/// ```json
+/// {
+///     "table_columns": [
+///         {
+///             "data_type": "string",
+///             "column_name": "name",
+///         },
+///         {
+///         "data_type": "int",
+///         "column_name": "lifespan"
+///         }
+///     ]
+///     ,
+///     "table_rows": [
+///         [
+///         "Ryzen 9 5900X",
+///         5
+///         ],
+///     ]
+/// }
 /// ```
-/// json_file_path: &str
-/// ```
 ///
-/// jsonファイルのパス
-///
+pub fn read_json_file(file_path: &str) -> Result<JsonData, Box<dyn Error>> {
+    let file = File::open(file_path).expect("File not found");
+    let reader = BufReader::new(file);
+    let data = serde_json::from_reader(reader).expect("Failed JSON file.");
+
+    Ok(data)
+}
+
+#[test]
+fn test_read_json_file() {
+    let file_path = "test/test.json";
+
+    let expected_data = JsonData {
+        table_name: "test_table".to_string(),
+        table_columns: vec![
+            TableColumn {
+                data_type: "string".to_string(),
+                column_name: "name".to_string(),
+            },
+            TableColumn {
+                data_type: "string".to_string(),
+                column_name: "type".to_string(),
+            },
+            TableColumn {
+                data_type: "string".to_string(),
+                column_name: "brand".to_string(),
+            },
+        ],
+        table_rows: vec![
+            vec![json!("Ryzen 9 5900X"), json!("CPU"), json!("AMD")],
+            vec![json!("GeForce RTX 3080"), json!("GPU"), json!("NVIDIA")],
+            vec![
+                json!("Samusung 970 EVO SSD"),
+                json!("SSD"),
+                json!("Samsung"),
+            ],
+        ],
+    };
+
+    let result = read_json_file(&file_path).unwrap();
+
+    assert_eq!(result, expected_data);
+}
+
+// 渡したjsonファイルについてのバリデーションをまとめて行う関数
+//
+// # Arguments
+// ```
+// json_file_path: &str
+// ```
+//
+// jsonファイルのパス
+//
 // pub fn validate_json_data(json_file_path: &str) -> bool {
 //     let (table_columns, table_row) = read_json_file(json_file_path);
 
@@ -42,29 +174,29 @@ pub struct JsonData {
 //     true
 // }
 
-/// カラムのデータタイプが全て、使用して良い型かどうかを判定する
-///
-/// なお、使用して良い型かどうかはハードコードされたvariable_types
-///
-/// - int
-/// - float
-/// - string
-///
-/// JSONデータ側で使用する恣意的なデータ型であり、Rustの型と一致していないことに注意する
-///
-/// # Arguments
-/// ```
-/// table_columns: &Option<Value>
-/// ```
-///
-/// インサート用のテーブルカラムデータ
-/// 型はserde::json::Value
-///
-/// # Return
-///
-/// カラムデータに使用を許容されていないデータが入っていないかどうかを判定する
-///
-///
+// カラムのデータタイプが全て、使用して良い型かどうかを判定する
+//
+// なお、使用して良い型かどうかはハードコードされたvariable_types
+//
+// - int
+// - float
+// - string
+//
+// JSONデータ側で使用する恣意的なデータ型であり、Rustの型と一致していないことに注意する
+//
+// # Arguments
+// ```
+// table_columns: &Option<Value>
+// ```
+//
+// インサート用のテーブルカラムデータ
+// 型はserde::json::Value
+//
+// # Return
+//
+// カラムデータに使用を許容されていないデータが入っていないかどうかを判定する
+//
+//
 // pub fn validate_table_columns_type(table_columns: &Option<Value>) -> bool {
 //     let variable_types = ["int", "string", "float"];
 
@@ -125,28 +257,28 @@ pub struct JsonData {
 //     }
 // }
 
-/// カラムデータの個数と、ロウデータの個数が一致しているかをバリデーションする関数
-///
-/// なお、DBのテーブルデータのカラム数と一致するかは判定しない
-///
-/// # Arguments
-///
-/// ```
-/// (table_columns: &Option<Value>, table_row: &Option<Value>)
-/// ```
-/// インサート用のテーブルカラムデータと、テーブルロウデータのタプルを受け取る
-/// 型はserde::json::Value
-///
-/// # Returns
-///
-/// カラムデータの個数と、全てのロウデータの個数が一致していればtrueを返す
-///
-/// 一致していなければfalseを返す
-///
-/// ```
-/// bool
-/// ```
-///
+// カラムデータの個数と、ロウデータの個数が一致しているかをバリデーションする関数
+//
+// なお、DBのテーブルデータのカラム数と一致するかは判定しない
+//
+// # Arguments
+//
+// ```
+// (table_columns: &Option<Value>, table_row: &Option<Value>)
+// ```
+// インサート用のテーブルカラムデータと、テーブルロウデータのタプルを受け取る
+// 型はserde::json::Value
+//
+// # Returns
+//
+// カラムデータの個数と、全てのロウデータの個数が一致していればtrueを返す
+//
+// 一致していなければfalseを返す
+//
+// ```
+// bool
+// ```
+
 // pub fn validate_row_column_length(
 //     table_columns: &Option<Value>,
 //     table_row: &Option<Value>,
@@ -175,73 +307,3 @@ pub struct JsonData {
 //         false
 //     }
 // }
-
-/// JSONファイルに設定されたインサート用のSQLデータを読み込む関数
-///
-/// JSONファイルのデータ構造は以下の通りである
-///
-/// ```json
-/// {
-///     "table_columns": [
-///         {
-///             "data_type": "string",
-///             "column_name": "name",
-///         },
-///         {
-///         "data_type": "int",
-///         "column_name": "lifespan"
-///         }
-///     ]
-///     ,
-///     "table_rows": [
-///         [
-///         "Ryzen 9 5900X",
-///         5
-///         ],
-///     ]
-/// }
-/// ```
-///
-pub fn read_json_file(file_path: &str) -> Result<JsonData, Box<dyn Error>> {
-    let mut file = File::open(file_path).expect("File not found");
-    let reader = BufReader::new(file);
-    let data = serde_json::from_reader(reader).expect("Failed JSON file.");
-
-    Ok(data)
-}
-
-#[test]
-fn test_read_json_file() {
-    let file_path = "test/test.json";
-
-    let expected_data = JsonData {
-        table_name: "test_table".to_string(),
-        table_columns: vec![
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "name".to_string(),
-            },
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "type".to_string(),
-            },
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "brand".to_string(),
-            },
-        ],
-        table_rows: vec![
-            vec![json!("Ryzen 9 5900X"), json!("CPU"), json!("AMD")],
-            vec![json!("GeForce RTX 3080"), json!("GPU"), json!("NVIDIA")],
-            vec![
-                json!("Samusung 970 EVO SSD"),
-                json!("SSD"),
-                json!("Samsung"),
-            ],
-        ],
-    };
-
-    let result = read_json_file(&file_path).unwrap();
-
-    assert_eq!(result, expected_data);
-}
