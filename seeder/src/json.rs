@@ -1,10 +1,6 @@
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::{
-    error::Error,
-    fs::File,
-    io::{BufReader, Read},
-};
+use std::{error::Error, fs::File, io::BufReader};
 
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct TableColumn {
@@ -19,9 +15,35 @@ pub struct JsonData {
     pub table_rows: Vec<Vec<Value>>,
 }
 
+/// JSONファイルに関数バリデーションをまとめて行う関数
+///
+/// 行われるバリデーションは以下の2つ
+///
+/// - validate_row_column_count()
+/// カラムの数と、各ロウデータの数が一致しているかを検証
+///
+/// - validate_columns_data_type()
+/// カラムのデータタイプが、許可されたデータ型であるかを検証する
+///
+pub fn validate_json_data(data: &JsonData) -> Result<(), String> {
+    // カラムの数と、各ロウデータの数が一致しているかを検証
+    if !validate_row_column_count(&data) {
+        return Err("Row column count validation failed.".into());
+    }
+
+    // カラムのデータタイプが許可されたデータ型であるかを検証
+    if !validate_columns_data_type(&data) {
+        return Err("Column data type validation failed.".into());
+    }
+
+    Ok(())
+}
+
+/// JSONファイルの、カラムデータと各ロウデータが一致しているかを検証する
+///
 fn validate_row_column_count(data: &JsonData) -> bool {
     let column_count = data.table_columns.len();
-    for (i, row) in data.table_rows.iter().enumerate() {
+    for (_, row) in data.table_rows.iter().enumerate() {
         if row.len() != column_count {
             return false;
         }
@@ -75,6 +97,8 @@ fn test_validate_column_count_failure() {
     assert!(!validate_row_column_count(&data));
 }
 
+/// JSONファイルのカラムのデータ型が、許可されたデータ型であるかを検証する
+///
 pub fn validate_columns_data_type(data: &JsonData) -> bool {
     let allowed_types = ["int", "string", "float", "date"];
     for column in &data.table_columns {
@@ -235,160 +259,3 @@ fn test_read_json_file() {
 
     assert_eq!(result, expected_data);
 }
-
-// 渡したjsonファイルについてのバリデーションをまとめて行う関数
-//
-// # Arguments
-// ```
-// json_file_path: &str
-// ```
-//
-// jsonファイルのパス
-//
-// pub fn validate_json_data(json_file_path: &str) -> bool {
-//     let (table_columns, table_row) = read_json_file(json_file_path);
-
-//     if !validate_row_column_length(&table_columns, &table_row) {
-//         return false;
-//     };
-
-//     if !validate_table_columns_type(&table_columns) {
-//         return false;
-//     };
-
-//     true
-// }
-
-// カラムのデータタイプが全て、使用して良い型かどうかを判定する
-//
-// なお、使用して良い型かどうかはハードコードされたvariable_types
-//
-// - int
-// - float
-// - string
-//
-// JSONデータ側で使用する恣意的なデータ型であり、Rustの型と一致していないことに注意する
-//
-// # Arguments
-// ```
-// table_columns: &Option<Value>
-// ```
-//
-// インサート用のテーブルカラムデータ
-// 型はserde::json::Value
-//
-// # Return
-//
-// カラムデータに使用を許容されていないデータが入っていないかどうかを判定する
-//
-//
-// pub fn validate_table_columns_type(table_columns: &Option<Value>) -> bool {
-//     let variable_types = ["int", "string", "float"];
-
-//     let table_columns_value = table_columns.as_ref().unwrap();
-//     let columns_data = table_columns_value.as_array().unwrap();
-
-//     for data in columns_data {
-//         let data_type_str = data.get("data_type").unwrap().as_str().unwrap();
-//         if !variable_types.contains(&data_type_str) {
-//             return false;
-//         }
-//     }
-//     true
-// }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use serde_json::json;
-
-//     #[test]
-//     fn test_validate_table_columns_type_valid() {
-//         let table_columns = json!([
-//             {"column_name":"name", "data_type":"string"},
-//             {"column_name":"age", "data_type":"int"},
-//             {"column_name":"salary", "data_type":"float"}
-//         ]);
-//         assert!(validate_table_columns_type(&Some(table_columns)));
-//     }
-
-//     #[test]
-//     fn test_validate_table_columns_type_invalid_type() {
-//         let table_columns = json!([
-//             {"column_name":"name", "data_type":"string"},
-//             // invalid type "integer"
-//             {"column_name":"age", "data_type":"integer"},
-//             {"column_name":"salary", "data_type":"float"}
-//         ]);
-//         assert!(!validate_table_columns_type(&Some(table_columns)));
-//     }
-
-//     #[test]
-//     fn test_validate_table_columns_type_missing_data_type() {
-//         let table_columns = json!([
-//             {"column_name":"name", "data_type":"string"},
-//             // missing data type
-//             {"column_name":"age"},
-//             {"column_name":"salary", "data_type":"float"}
-//         ]);
-//         let result = std::panic::catch_unwind(|| validate_table_columns_type(&Some(table_columns)));
-//         assert!(result.is_err());
-//     }
-
-//     #[test]
-//     fn test_validate_table_columns_type_empty_array() {
-//         let table_columns = json!([]);
-//         assert!(validate_table_columns_type(&Some(table_columns)));
-//     }
-// }
-
-// カラムデータの個数と、ロウデータの個数が一致しているかをバリデーションする関数
-//
-// なお、DBのテーブルデータのカラム数と一致するかは判定しない
-//
-// # Arguments
-//
-// ```
-// (table_columns: &Option<Value>, table_row: &Option<Value>)
-// ```
-// インサート用のテーブルカラムデータと、テーブルロウデータのタプルを受け取る
-// 型はserde::json::Value
-//
-// # Returns
-//
-// カラムデータの個数と、全てのロウデータの個数が一致していればtrueを返す
-//
-// 一致していなければfalseを返す
-//
-// ```
-// bool
-// ```
-
-// pub fn validate_row_column_length(
-//     table_columns: &Option<Value>,
-//     table_row: &Option<Value>,
-// ) -> bool {
-//     let table_columns_value = table_columns.as_ref().expect("table_columns not found");
-
-//     let columns = table_columns_value
-//         .as_array()
-//         .expect("table_columns is not a valid array");
-
-//     let columns_len = columns.len();
-
-//     let table_row_values = table_row.as_ref().expect("table_row not found");
-
-//     let rows = table_row_values
-//         .as_array()
-//         .expect("table_row is not a valid array");
-
-//     let all_rows_have_same_length = rows
-//         .iter()
-//         .all(|row| row.as_array().expect("Each row should be an array").len() == columns_len);
-
-//     if all_rows_have_same_length {
-//         true
-//     } else {
-//         false
-//     }
-// }

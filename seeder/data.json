@@ -50,10 +50,6 @@
             "column_name": "widthm"
         },
         {
-            "data_type": "float",
-            "column_name": "heightm"
-        },
-        {
             "data_type": "int",
             "column_name": "lifespan"
         }

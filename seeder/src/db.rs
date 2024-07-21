@@ -12,6 +12,14 @@ pub async fn insert() -> Result<(), Box<dyn Error>> {
     let file_path = "data.json";
     let data = read_json_file(file_path).unwrap();
 
+    // validation
+    if let Err(e) = validate_json_data(&data) {
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            e,
+        )));
+    }
+
     let mut transaction = pool.begin().await.unwrap();
 
     match insert_data(&mut transaction, data).await {
