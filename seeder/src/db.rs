@@ -2,9 +2,12 @@ use crate::json::{self, JsonData};
 use chrono::NaiveDate;
 use dotenv::dotenv;
 use serde_json::Value;
-use sqlx::PgPool;
+use sqlx::{PgPool, Transaction};
 
-pub async fn insert_data(pool: &PgPool, data: JsonData) -> Result<(), sqlx::Error> {
+pub async fn insert_data<'a>(
+    transaction: &mut Transaction<'a, sqlx::Postgres>,
+    data: JsonData,
+) -> Result<(), sqlx::Error> {
     let columns: Vec<String> = data
         .table_columns
         .iter()
@@ -57,15 +60,12 @@ pub async fn insert_data(pool: &PgPool, data: JsonData) -> Result<(), sqlx::Erro
                 "date" => {
                     if let Value::String(val) = value {
                         query_builder = query_builder.bind(val);
-                        // if let Ok(date) = NaiveDate::parse_from_str(val, "%Y-%m-%d") {
-                        //     query_builder = query_builder.bind(date);
-                        // }
                     }
                 }
                 _ => {}
             }
         }
-        query_builder.execute(pool).await?;
+        query_builder.execute(&mut **transaction).await?;
     }
 
     Ok(())
