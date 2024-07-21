@@ -1,0 +1,13 @@
+{
+    "table_name": "test_table",
+    "table_columns" : [
+        {"data_type": "string", "column_name": "name"},
+        {"data_type": "string", "column_name": "type"},
+        {"data_type": "string", "column_name": "brand"}
+    ],
+    "table_rows": [
+        ["Ryzen 9 5900X", "CPU", "AMD"],
+        ["GeForce RTX 3080", "GPU", "NVIDIA"],
+        ["Samusung 970 EVO SSD", "SSD", "Samsung"]
+    ]
+}

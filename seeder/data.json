@@ -1,4 +1,5 @@
 {
+    "table_name": "computer_parts",
     "table_columns" : [
         {
             "data_type": "string",
@@ -58,7 +59,7 @@
         }
     ]
     ,
-    "table_row": [
+    "table_rows": [
         [
         "Ryzen 9 5900X",
         "CPU",
