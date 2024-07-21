@@ -29,56 +29,141 @@ fn validate_row_column_count(data: &JsonData) -> bool {
     true
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde_json::json;
+#[test]
+fn test_validate_column_count() {
+    let data = JsonData {
+        table_name: "test_table".to_string(),
+        table_columns: vec![
+            TableColumn {
+                data_type: "string".to_string(),
+                column_name: "name".to_string(),
+            },
+            TableColumn {
+                data_type: "int".to_string(),
+                column_name: "age".to_string(),
+            },
+        ],
+        table_rows: vec![
+            vec![json!("Alice"), json!(30)],
+            vec![json!("Bob"), json!(25)],
+        ],
+    };
 
-    #[test]
-    fn test_validate_column_count() {
-        let data = JsonData {
-            table_name: "test_table".to_string(),
-            table_columns: vec![
-                TableColumn {
-                    data_type: "string".to_string(),
-                    column_name: "name".to_string(),
-                },
-                TableColumn {
-                    data_type: "int".to_string(),
-                    column_name: "age".to_string(),
-                },
-            ],
-            table_rows: vec![
-                vec![json!("Alice"), json!(30)],
-                vec![json!("Bob"), json!(25)],
-            ],
-        };
+    assert!(validate_row_column_count(&data));
+}
 
-        assert!(validate_row_column_count(&data));
+#[test]
+fn test_validate_column_count_failure() {
+    let data = JsonData {
+        table_name: "test_table".to_string(),
+        table_columns: vec![
+            TableColumn {
+                data_type: "string".to_string(),
+                column_name: "name".to_string(),
+            },
+            TableColumn {
+                data_type: "int".to_string(),
+                column_name: "age".to_string(),
+            },
+        ],
+        table_rows: vec![
+            vec![json!("Alice"), json!(30)],
+            vec![json!("Bob")], // カラム数が一致しない
+        ],
+    };
+
+    assert!(!validate_row_column_count(&data));
+}
+
+pub fn validate_columns_data_type(data: &JsonData) -> bool {
+    let allowed_types = ["int", "string", "float", "date"];
+    for column in &data.table_columns {
+        if !allowed_types.contains(&column.data_type.as_str()) {
+            return false;
+        }
     }
-
-    #[test]
-    fn test_validate_column_count_failure() {
-        let data = JsonData {
-            table_name: "test_table".to_string(),
-            table_columns: vec![
-                TableColumn {
-                    data_type: "string".to_string(),
-                    column_name: "name".to_string(),
-                },
-                TableColumn {
-                    data_type: "int".to_string(),
-                    column_name: "age".to_string(),
-                },
+    true
+}
+#[test]
+fn test_validate_columns_data_type_success() {
+    let data = JsonData {
+        table_name: "test_table".to_string(),
+        table_columns: vec![
+            TableColumn {
+                data_type: "string".to_string(),
+                column_name: "name".to_string(),
+            },
+            TableColumn {
+                data_type: "int".to_string(),
+                column_name: "age".to_string(),
+            },
+            TableColumn {
+                data_type: "float".to_string(),
+                column_name: "salary".to_string(),
+            },
+            TableColumn {
+                data_type: "date".to_string(),
+                column_name: "birth_date".to_string(),
+            },
+        ],
+        table_rows: vec![
+            vec![
+                serde_json::json!("Alice"),
+                serde_json::json!(30),
+                serde_json::json!(50000.0),
+                serde_json::json!("1990-01-01"),
             ],
-            table_rows: vec![
-                vec![json!("Alice"), json!(30)],
-                vec![json!("Bob")], // カラム数が一致しない
+            vec![
+                serde_json::json!("Bob"),
+                serde_json::json!(25),
+                serde_json::json!(60000.0),
+                serde_json::json!("1995-05-15"),
             ],
-        };
+        ],
+    };
 
-        assert!(!validate_row_column_count(&data));
-    }
+    assert!(validate_columns_data_type(&data));
+}
+
+#[test]
+fn test_validate_columns_data_type_failure() {
+    let data = JsonData {
+        table_name: "test_table".to_string(),
+        table_columns: vec![
+            TableColumn {
+                data_type: "string".to_string(),
+                column_name: "name".to_string(),
+            },
+            TableColumn {
+                data_type: "int".to_string(),
+                column_name: "age".to_string(),
+            },
+            TableColumn {
+                data_type: "double".to_string(),
+                column_name: "salary".to_string(),
+            }, // 不正なデータ型
+            TableColumn {
+                data_type: "date".to_string(),
+                column_name: "birth_date".to_string(),
+            },
+        ],
+        table_rows: vec![
+            vec![
+                serde_json::json!("Alice"),
+                serde_json::json!(30),
+                serde_json::json!(50000.0),
+                serde_json::json!("1990-01-01"),
+            ],
+            vec![
+                serde_json::json!("Bob"),
+                serde_json::json!(25),
+                serde_json::json!(60000.0),
+                serde_json::json!("1995-05-15"),
+            ],
+        ],
+    };
+
+    assert!(!validate_columns_data_type(&data));
 }
 
 /// JSONファイルに設定されたインサート用のSQLデータを読み込む関数
