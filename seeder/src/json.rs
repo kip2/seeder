@@ -7,16 +7,16 @@ use std::{
 };
 
 #[derive(Deserialize, Debug, PartialEq)]
-struct TableColumn {
-    data_type: String,
-    column_name: String,
+pub struct TableColumn {
+    pub data_type: String,
+    pub column_name: String,
 }
 
 #[derive(Deserialize, Debug, PartialEq)]
-struct JsonData {
-    table_name: String,
-    table_columns: Vec<TableColumn>,
-    table_rows: Vec<Vec<Value>>,
+pub struct JsonData {
+    pub table_name: String,
+    pub table_columns: Vec<TableColumn>,
+    pub table_rows: Vec<Vec<Value>>,
 }
 
 /// 渡したjsonファイルについてのバリデーションをまとめて行う関数

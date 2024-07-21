@@ -1,10 +1,75 @@
-use core::num;
+use crate::json::{self, JsonData};
+use chrono::NaiveDate;
 use dotenv::dotenv;
-use sqlx::any::{install_default_drivers, AnyQueryResult};
-use sqlx::{database, query, AnyPool, Row};
-use std::{env, error::Error, fs};
+use serde_json::Value;
+use sqlx::PgPool;
 
-use crate::json::{self};
+pub async fn insert_data(pool: &PgPool, data: JsonData) -> Result<(), sqlx::Error> {
+    let columns: Vec<String> = data
+        .table_columns
+        .iter()
+        .map(|col| col.column_name.clone())
+        .collect();
+
+    let columns_str = columns.join(", ");
+
+    let table_name = data.table_name;
+
+    let mut placeholders: Vec<String> = vec![];
+
+    for (i, col) in data.table_columns.iter().enumerate() {
+        if col.data_type == "date" {
+            placeholders.push(format!("CAST(${} AS DATE)", i + 1));
+        } else {
+            placeholders.push(format!("${}", i + 1));
+        }
+    }
+    let placeholders_str = placeholders.join(", ");
+
+    let query = format!(
+        "INSERT INTO {} ({}) VALUES ({})",
+        table_name, columns_str, placeholders_str
+    );
+
+    for row in data.table_rows {
+        let mut query_builder = sqlx::query(&query);
+        for (i, value) in row.iter().enumerate() {
+            match data.table_columns[i].data_type.as_str() {
+                "string" => {
+                    if let Value::String(val) = value {
+                        query_builder = query_builder.bind(val);
+                    }
+                }
+                "int" => {
+                    if let Value::Number(val) = value {
+                        if let Some(int_val) = val.as_i64() {
+                            query_builder = query_builder.bind(int_val);
+                        }
+                    }
+                }
+                "float" => {
+                    if let Value::Number(val) = value {
+                        if let Some(float_val) = val.as_f64() {
+                            query_builder = query_builder.bind(float_val);
+                        }
+                    }
+                }
+                "date" => {
+                    if let Value::String(val) = value {
+                        query_builder = query_builder.bind(val);
+                        // if let Ok(date) = NaiveDate::parse_from_str(val, "%Y-%m-%d") {
+                        //     query_builder = query_builder.bind(date);
+                        // }
+                    }
+                }
+                _ => {}
+            }
+        }
+        query_builder.execute(pool).await?;
+    }
+
+    Ok(())
+}
 
 // pub async fn insert_row() {
 //     let db = db_pool().await.unwrap();

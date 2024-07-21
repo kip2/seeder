@@ -3,11 +3,12 @@ name = "seeder"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# see more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = { version = "0.4", features = ["serde"] }
 dotenv = "0.15.0"
 serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0"
-sqlx = { version = "0.7.4", features = ["any", "mysql", "postgres", "runtime-tokio-rustls"] }
+sqlx = { version = "0.7.4", features = ["json", "any", "mysql", "postgres", "runtime-tokio-rustls"] }
 tokio = { version = "1.38.0", features = ["full"] }
