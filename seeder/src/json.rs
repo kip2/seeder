@@ -196,6 +196,7 @@ fn test_validate_columns_data_type_failure() {
 ///
 /// ```json
 /// {
+///     "table_name": "computer_parts",
 ///     "table_columns": [
 ///         {
 ///             "data_type": "string",
