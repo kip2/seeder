@@ -8,17 +8,18 @@ pub struct Args {
     #[arg(
         short = 'f',
         long = "filepath",
-        help = "File path for executing seeds to the database"
+        help = "File path for executing seeds to the database",
+        num_args = 1..
     )]
-    file_path: String,
+    file_paths: Vec<String>,
 }
 
 pub async fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
-    let file_path = &args.file_path;
-
-    insert(file_path).await?;
+    for file_path in &args.file_paths {
+        insert(file_path).await?;
+    }
 
     Ok(())
 }
