@@ -4,6 +4,8 @@ use serde_json::Value;
 use sqlx::{PgPool, Transaction};
 use std::{env, error::Error};
 
+/// ファイルパスに記載されたSeeder用のデータで、INSERTクエリを実行する
+///
 pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
     dotenv().expect("Failed to read .env file");
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");

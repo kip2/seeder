@@ -18,7 +18,18 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
     for file_path in &args.file_paths {
-        insert(file_path).await?;
+        println!("===========");
+        println!("Starting SQL execution for file: {}", &file_path);
+        if let Err(e) = insert(file_path).await {
+            eprintln!(
+                "Failed to execute SQL for file: {}. Error: {}",
+                file_path, e
+            );
+            eprintln!("===========");
+            return Err(e);
+        }
+        println!("Finished SQL execution for file: {}", &file_path);
+        println!("===========");
     }
 
     Ok(())
