@@ -14,9 +14,19 @@ pub struct Args {
     file_paths: Vec<String>,
 }
 
+/// コンソール処理を実行する
+///
 pub async fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
+    // run insert
+    run_queries(&args).await?;
+    Ok(())
+}
+
+/// クエリのインサート処理を実行する
+///
+async fn run_queries(args: &Args) -> Result<(), Box<dyn Error>> {
     for file_path in &args.file_paths {
         println!("===========");
         println!("Starting SQL execution for file: {}", &file_path);
