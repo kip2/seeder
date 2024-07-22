@@ -4,7 +4,7 @@ use serde_json::Value;
 use sqlx::{PgPool, Transaction};
 use std::{env, error::Error};
 
-/// ファイルパスに記載されたSeeder用のデータで、INSERTクエリを実行する
+/// ファイルパスに記載されたseed用のデータで、INSERT処理を実行する
 ///
 pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
     dotenv().expect("Failed to read .env file");
@@ -35,6 +35,11 @@ pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// JSONファイルに定義したクエリデータを受け取り、INSERT処理を行う
+///
+/// ## 備忘
+///
+/// postgreSQLは、型が"date"の場合にはバインドメッセージの変換の必要があるため、変換を行なっている
 pub async fn insert_data<'a>(
     transaction: &mut Transaction<'a, sqlx::Postgres>,
     data: JsonData,
