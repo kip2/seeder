@@ -4,12 +4,11 @@ use serde_json::Value;
 use sqlx::{PgPool, Transaction};
 use std::{env, error::Error};
 
-pub async fn insert() -> Result<(), Box<dyn Error>> {
+pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
     dotenv().expect("Failed to read .env file");
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await.unwrap();
 
-    let file_path = "data.json";
     let data = read_json_file(file_path).unwrap();
 
     // validation

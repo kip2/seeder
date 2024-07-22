@@ -43,6 +43,7 @@ pub fn validate_json_data(data: &JsonData) -> Result<(), String> {
 ///
 fn validate_row_column_count(data: &JsonData) -> bool {
     let column_count = data.table_columns.len();
+
     for (_, row) in data.table_rows.iter().enumerate() {
         if row.len() != column_count {
             return false;
