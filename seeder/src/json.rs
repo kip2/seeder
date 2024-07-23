@@ -39,7 +39,7 @@ pub fn validate_json_data(data: &JsonData) -> Result<(), String> {
     Ok(())
 }
 
-/// JSONファイルの、カラムデータと各ロウデータが一致しているかを検証する
+/// JSONファイルの、カラムデータの数と各ロウデータの数が一致しているかを検証する
 ///
 fn validate_row_column_count(data: &JsonData) -> bool {
     let column_count = data.table_columns.len();
