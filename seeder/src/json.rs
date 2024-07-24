@@ -22,65 +22,10 @@ pub struct JsonData {
     pub table_rows: Vec<Vec<Value>>,
 }
 
-pub fn generate_random_data() -> JsonData {
-    let table_columns = vec![
-        TableColumn {
-            data_type: "string".to_string(),
-            column_name: "name".to_string(),
-        },
-        TableColumn {
-            data_type: "string".to_string(),
-            column_name: "type".to_string(),
-        },
-        TableColumn {
-            data_type: "string".to_string(),
-            column_name: "brand".to_string(),
-        },
-        TableColumn {
-            data_type: "string".to_string(),
-            column_name: "model_number".to_string(),
-        },
-        TableColumn {
-            data_type: "date".to_string(),
-            column_name: "release_date".to_string(),
-        },
-        TableColumn {
-            data_type: "string".to_string(),
-            column_name: "description".to_string(),
-        },
-        TableColumn {
-            data_type: "int".to_string(),
-            column_name: "performance_score".to_string(),
-        },
-        TableColumn {
-            data_type: "float".to_string(),
-            column_name: "market_price".to_string(),
-        },
-        TableColumn {
-            data_type: "float".to_string(),
-            column_name: "rsm".to_string(),
-        },
-        TableColumn {
-            data_type: "float".to_string(),
-            column_name: "power_consumptionw".to_string(),
-        },
-        TableColumn {
-            data_type: "float".to_string(),
-            column_name: "lengthm".to_string(),
-        },
-        TableColumn {
-            data_type: "float".to_string(),
-            column_name: "widthm".to_string(),
-        },
-        TableColumn {
-            data_type: "float".to_string(),
-            column_name: "heightm".to_string(),
-        },
-        TableColumn {
-            data_type: "int".to_string(),
-            column_name: "lifespan".to_string(),
-        },
-    ];
+pub fn generate_random_data(file_path: &str) -> JsonData {
+    let file = File::open(file_path).expect("File not found");
+    let reader = BufReader::new(file);
+    let mut data: JsonData = serde_json::from_reader(reader).expect("Failed JSON file.");
 
     let mut table_rows = Vec::new();
 
@@ -104,11 +49,8 @@ pub fn generate_random_data() -> JsonData {
         table_rows.push(row);
     }
 
-    JsonData {
-        table_name: "computer_parts".to_string(),
-        table_columns,
-        table_rows,
-    }
+    data.table_rows = table_rows;
+    data
 }
 
 /// JSONファイルに関数バリデーションをまとめて行う関数
@@ -300,15 +242,15 @@ fn test_validate_columns_data_type_failure() {
 ///             "column_name": "name",
 ///         },
 ///         {
-///         "data_type": "int",
-///         "column_name": "lifespan"
+///             "data_type": "int",
+///             "column_name": "lifespan"
 ///         }
 ///     ]
 ///     ,
 ///     "table_rows": [
 ///         [
-///         "Ryzen 9 5900X",
-///         5
+///             "Ryzen 9 5900X",
+///             5
 ///         ],
 ///     ]
 /// }

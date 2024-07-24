@@ -58,5 +58,8 @@
             "data_type": "int",
             "column_name": "lifespan"
         }
+    ],
+    "table_rows": [
+        
     ]
 }
