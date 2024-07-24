@@ -23,9 +23,7 @@ pub struct JsonData {
 }
 
 pub fn generate_random_data(file_path: &str) -> JsonData {
-    let file = File::open(file_path).expect("File not found");
-    let reader = BufReader::new(file);
-    let mut data: JsonData = serde_json::from_reader(reader).expect("Failed JSON file.");
+    let mut data = read_json_file(file_path).unwrap();
 
     let mut table_rows = Vec::new();
 
