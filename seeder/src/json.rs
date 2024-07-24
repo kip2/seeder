@@ -1,18 +1,114 @@
+use fake::faker::chrono::raw::DateTime;
+use fake::faker::company::en::*;
+use fake::faker::lorem::en::*;
+use fake::locales::*;
+use fake::Fake;
+use rand::Rng;
 use serde::Deserialize;
+use serde::Serialize;
 use serde_json::{json, Value};
 use std::{error::Error, fs::File, io::BufReader};
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 pub struct TableColumn {
     pub data_type: String,
     pub column_name: String,
 }
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 pub struct JsonData {
     pub table_name: String,
     pub table_columns: Vec<TableColumn>,
     pub table_rows: Vec<Vec<Value>>,
+}
+
+pub fn generate_random_data() -> JsonData {
+    let table_columns = vec![
+        TableColumn {
+            data_type: "string".to_string(),
+            column_name: "name".to_string(),
+        },
+        TableColumn {
+            data_type: "string".to_string(),
+            column_name: "type".to_string(),
+        },
+        TableColumn {
+            data_type: "string".to_string(),
+            column_name: "brand".to_string(),
+        },
+        TableColumn {
+            data_type: "string".to_string(),
+            column_name: "model_number".to_string(),
+        },
+        TableColumn {
+            data_type: "date".to_string(),
+            column_name: "release_date".to_string(),
+        },
+        TableColumn {
+            data_type: "string".to_string(),
+            column_name: "description".to_string(),
+        },
+        TableColumn {
+            data_type: "int".to_string(),
+            column_name: "performance_score".to_string(),
+        },
+        TableColumn {
+            data_type: "float".to_string(),
+            column_name: "market_price".to_string(),
+        },
+        TableColumn {
+            data_type: "float".to_string(),
+            column_name: "rsm".to_string(),
+        },
+        TableColumn {
+            data_type: "float".to_string(),
+            column_name: "power_consumptionw".to_string(),
+        },
+        TableColumn {
+            data_type: "float".to_string(),
+            column_name: "lengthm".to_string(),
+        },
+        TableColumn {
+            data_type: "float".to_string(),
+            column_name: "widthm".to_string(),
+        },
+        TableColumn {
+            data_type: "float".to_string(),
+            column_name: "heightm".to_string(),
+        },
+        TableColumn {
+            data_type: "int".to_string(),
+            column_name: "lifespan".to_string(),
+        },
+    ];
+
+    let mut table_rows = Vec::new();
+
+    for _ in 0..10 {
+        let row = vec![
+            json!(CompanyName().fake::<String>()),
+            json!(CompanySuffix().fake::<String>()),
+            json!(CompanyName().fake::<String>()),
+            json!(CompanySuffix().fake::<String>()),
+            json!(DateTime(EN).fake::<String>()),
+            json!(Sentence(1..2).fake::<String>()),
+            json!(rand::thread_rng().gen_range(50..101)),
+            json!(rand::thread_rng().gen_range(10.0..1000.0)),
+            json!(rand::thread_rng().gen_range(0.01..0.1)),
+            json!(rand::thread_rng().gen_range(50.0..500.0)),
+            json!(rand::thread_rng().gen_range(0.01..1.0)),
+            json!(rand::thread_rng().gen_range(0.01..1.0)),
+            json!(rand::thread_rng().gen_range(0.01..1.0)),
+            json!(rand::thread_rng().gen_range(1..10)),
+        ];
+        table_rows.push(row);
+    }
+
+    JsonData {
+        table_name: "computer_parts".to_string(),
+        table_columns,
+        table_rows,
+    }
 }
 
 /// JSONファイルに関数バリデーションをまとめて行う関数

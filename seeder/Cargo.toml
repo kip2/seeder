@@ -9,7 +9,8 @@ edition = "2021"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.5.9", features = ["derive"] }
 dotenv = "0.15.0"
-faker = "0.0.4"
+fake = { version = "2.9.2", features = ["chrono", "derive"] }
+rand = "0.8"
 serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0"
 sqlx = { version = "0.7.4", features = ["json", "any", "mysql", "postgres", "runtime-tokio-rustls"] }
