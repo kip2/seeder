@@ -1,5 +1,6 @@
+use chrono::prelude::*;
+use chrono::{FixedOffset, Utc};
 use fake::faker::chrono::raw::DateTime;
-use fake::faker::lorem::en::*;
 use fake::faker::name::raw::FirstName;
 use fake::locales::*;
 use fake::Fake;
@@ -40,7 +41,15 @@ pub fn generate_random_data(file_path: &str, n: usize) -> JsonData {
                     let num = rand::thread_rng().gen_range(0.01..10000.0);
                     json!(format!("{:.2}", num))
                 }
-                "date" => json!(DateTime(EN).fake::<String>()),
+                "date" => {
+                    let date_str = DateTime(EN).fake::<String>();
+                    if let Ok(date) = date_str.parse::<chrono::DateTime<Utc>>() {
+                        let jst = FixedOffset::east_opt(9 * 3600).unwrap();
+                        json!(date.with_timezone(&jst).format("%Y-%m-%d").to_string())
+                    } else {
+                        json!(null)
+                    }
+                }
                 _ => json!(null),
             };
             row.push(value);
