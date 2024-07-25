@@ -35,8 +35,11 @@ pub fn generate_random_data(file_path: &str, n: usize) -> JsonData {
         for column in columns {
             let value = match column.data_type.as_str() {
                 "string" => json!(FirstName(EN).fake::<String>()),
-                "int" => json!(rand::thread_rng().gen_range(1..100)),
-                "float" => json!(rand::thread_rng().gen_range(0.01..1000.0)),
+                "int" => json!(rand::thread_rng().gen_range(1..1000)),
+                "float" => {
+                    let num = rand::thread_rng().gen_range(0.01..10000.0);
+                    json!(format!("{:.2}", num))
+                }
                 "date" => json!(DateTime(EN).fake::<String>()),
                 _ => json!(null),
             };
