@@ -22,14 +22,14 @@ pub struct JsonData {
     pub table_rows: Vec<Vec<Value>>,
 }
 
-pub fn generate_random_data(file_path: &str) -> JsonData {
+pub fn generate_random_data(file_path: &str, n: usize) -> JsonData {
     let mut data = read_json_file(file_path).unwrap();
 
     let columns = &data.table_columns;
 
     let mut table_rows = Vec::new();
 
-    for _ in 0..10 {
+    for _ in 0..n {
         let mut row = Vec::new();
 
         for column in columns {
