@@ -1,6 +1,7 @@
 use fake::faker::chrono::raw::DateTime;
 use fake::faker::company::en::*;
 use fake::faker::lorem::en::*;
+use fake::faker::name::raw::Name;
 use fake::locales::*;
 use fake::Fake;
 use rand::Rng;
@@ -28,16 +29,15 @@ pub fn generate_random_data(file_path: &str) -> JsonData {
     let mut table_rows = Vec::new();
 
     // todo! ランダムデータの生成を、カラムの型データごとに生成を行うように変更する
-    // example: string -> Name().fake::<String>()
     // example: data -> DateTime(EN).fake::<String>()
     // example: int: rand::thread_rng().gen_range(50..101)
     // example: float: rand::thread_rng().gen_range(0.01..1.0)
     for _ in 0..10 {
         let row = vec![
-            json!(CompanyName().fake::<String>()),
-            json!(CompanySuffix().fake::<String>()),
-            json!(CompanyName().fake::<String>()),
-            json!(CompanySuffix().fake::<String>()),
+            json!(Name(EN).fake::<String>()),
+            json!(Name(EN).fake::<String>()),
+            json!(Name(EN).fake::<String>()),
+            json!(Name(EN).fake::<String>()),
             json!(DateTime(EN).fake::<String>()),
             json!(Sentence(1..2).fake::<String>()),
             json!(rand::thread_rng().gen_range(50..101)),
