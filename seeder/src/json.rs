@@ -1,4 +1,3 @@
-use chrono::prelude::*;
 use chrono::{FixedOffset, Utc};
 use fake::faker::chrono::raw::DateTime;
 use fake::faker::name::raw::FirstName;
@@ -7,7 +6,10 @@ use fake::Fake;
 use rand::Rng;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_json::to_string_pretty;
 use serde_json::{json, Value};
+use std::fs;
+use std::io::Write;
 use std::{error::Error, fs::File, io::BufReader};
 
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
@@ -21,6 +23,50 @@ pub struct JsonData {
     pub table_name: String,
     pub table_columns: Vec<TableColumn>,
     pub table_rows: Vec<Vec<Value>>,
+}
+
+/// テンプレートJSONファイルを作成する
+///
+pub fn create_template_json_file(file_path: &str) -> Result<(), Box<dyn Error>> {
+    let data = JsonData {
+        table_name: String::new(),
+        table_columns: vec![TableColumn {
+            data_type: "".to_string(),
+            column_name: "".to_string(),
+        }],
+        table_rows: Vec::new(),
+    };
+
+    let json_string = to_string_pretty(&data)?;
+
+    let mut file = File::create(file_path)?;
+    file.write_all(json_string.as_bytes())?;
+
+    Ok(())
+}
+
+#[test]
+fn test_create_json_file() {
+    let test_file_path = "test_output.json";
+
+    create_template_json_file(&test_file_path).expect("Failed to create JSON file");
+
+    let json_content = fs::read_to_string(test_file_path).expect("Failed to read JSON file");
+
+    let expected_data = JsonData {
+        table_name: String::new(),
+        table_columns: vec![TableColumn {
+            data_type: "".to_string(),
+            column_name: "".to_string(),
+        }],
+        table_rows: Vec::new(),
+    };
+    let expected_json =
+        to_string_pretty(&expected_data).expect("Failed to serialize expected data");
+
+    assert_eq!(json_content, expected_json);
+
+    fs::remove_file(test_file_path).expect("Failed to delete test file");
 }
 
 /// カラムを定義したJSONファイルから、カラムに紐づくランダムなデータの生成を行う

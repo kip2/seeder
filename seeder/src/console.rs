@@ -1,14 +1,17 @@
 use clap::Parser;
 use std::error::Error;
 
-use crate::db::{insert, insert_random_data};
+use crate::{
+    db::{insert, insert_random_data},
+    json::create_template_json_file,
+};
 
 #[derive(Debug, Parser)]
 pub struct Args {
     #[arg(
         short = 'f',
         long = "filepath",
-        help = "File path for executing seeds to the database",
+        help = "File path for executing seeds to the database. You can specify multiple file paths.",
         num_args = 1..
     )]
     file_paths: Vec<String>,
@@ -16,10 +19,17 @@ pub struct Args {
     #[arg(
         short = 'r',
         long = "random",
-        help = "File path and number of random data entries",
+        help = "Generate and seed the database with the specified number of random data entries. Provide the file path and the number of entries.",
         value_names = &["FILE_PATH", "NUMBER"]
     )]
     random: Option<Vec<String>>,
+
+    #[arg(
+        short = 'c',
+        long = "create",
+        help = "Create a new JSON file with the specified structure."
+    )]
+    create: Option<String>,
 }
 
 /// コンソール処理を実行する
@@ -40,10 +50,15 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 "The --random option requires exactly 2 arguments: <file_path> and <number>",
             )));
         }
+    } else if let Some(create_args) = args.create {
+        // run create template JSON file
+        create_template_json_file(&create_args)?;
     }
     Ok(())
 }
 
+/// 指定された数のランダムデータを生成し、DBにINSERTを行う
+///
 async fn run_insert_random_data(args: &Vec<String>) -> Result<(), Box<dyn Error>> {
     let file_path = &args[0];
     let n: usize = args[1].parse().map_err(|_| {
