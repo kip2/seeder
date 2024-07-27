@@ -33,7 +33,24 @@ pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub async fn insert_random_data(file_path: &String) -> Result<(), Box<dyn Error>> {
+pub async fn insert_random_data(file_path: &String, n: usize) -> Result<(), Box<dyn Error>> {
+    let pool = generate_db_connection().await;
+
+    let data = generate_random_data(&file_path, n);
+
+    // todo: validation
+
+    let mut transaction = pool.begin().await.unwrap();
+
+    match insert_data(&mut transaction, data).await {
+        Ok(_) => {
+            transaction.commit().await.unwrap();
+        }
+        Err(e) => {
+            transaction.rollback().await.unwrap();
+            return Err(Box::new(e) as Box<dyn Error>);
+        }
+    };
     Ok(())
 }
 
