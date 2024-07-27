@@ -39,7 +39,7 @@ pub fn generate_random_data(file_path: &str, n: usize) -> JsonData {
                 "int" => json!(rand::thread_rng().gen_range(1..1000)),
                 "float" => {
                     let num = rand::thread_rng().gen_range(0.01..10000.0);
-                    json!(format!("{:.2}", num))
+                    json!(format!("{:.2}", num).parse::<f64>().unwrap())
                 }
                 "date" => {
                     let date_str = DateTime(EN).fake::<String>();
