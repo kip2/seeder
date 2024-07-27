@@ -52,8 +52,19 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         }
     } else if let Some(create_args) = args.create {
         // run create template JSON file
-        create_template_json_file(&create_args)?;
+        run_create_template_json_file(&create_args)?;
     }
+    Ok(())
+}
+
+/// テンプレートファイルをクリエイトする関数のラッパー関数
+///
+fn run_create_template_json_file(file_path: &str) -> Result<(), Box<dyn Error>> {
+    println!("===========");
+    println!("Starting create template JSON file: {}", &file_path);
+    create_template_json_file(&file_path)?;
+    println!("Finished create template JSON file: {}", &file_path);
+    println!("===========");
     Ok(())
 }
 
