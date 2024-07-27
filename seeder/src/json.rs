@@ -255,7 +255,7 @@ mod tests {
 
     #[test]
     fn test_create_json_file() {
-        let test_file_path = "test_output.json";
+        let test_file_path = "test/test_output.json";
 
         create_template_json_file(&test_file_path).expect("Failed to create JSON file");
 
@@ -357,7 +357,7 @@ mod tests {
             ],
             table_rows: vec![
                 vec![json!("Alice"), json!(30)],
-                vec![json!("Bob")], // カラム数が一致しない
+                vec![json!("Bob")], // カラム数が一致しないケース
             ],
         };
 
