@@ -8,7 +8,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::to_string_pretty;
 use serde_json::{json, Value};
-use std::fs;
 use std::io::Write;
 use std::{error::Error, fs::File, io::BufReader};
 
@@ -43,30 +42,6 @@ pub fn create_template_json_file(file_path: &str) -> Result<(), Box<dyn Error>> 
     file.write_all(json_string.as_bytes())?;
 
     Ok(())
-}
-
-#[test]
-fn test_create_json_file() {
-    let test_file_path = "test_output.json";
-
-    create_template_json_file(&test_file_path).expect("Failed to create JSON file");
-
-    let json_content = fs::read_to_string(test_file_path).expect("Failed to read JSON file");
-
-    let expected_data = JsonData {
-        table_name: String::new(),
-        table_columns: vec![TableColumn {
-            data_type: "".to_string(),
-            column_name: "".to_string(),
-        }],
-        table_rows: Vec::new(),
-    };
-    let expected_json =
-        to_string_pretty(&expected_data).expect("Failed to serialize expected data");
-
-    assert_eq!(json_content, expected_json);
-
-    fs::remove_file(test_file_path).expect("Failed to delete test file");
 }
 
 /// カラムを定義したJSONファイルから、カラムに紐づくランダムなデータの生成を行う
@@ -150,52 +125,6 @@ fn validate_row_column_count(data: &JsonData) -> bool {
     true
 }
 
-#[test]
-fn test_validate_column_count() {
-    let data = JsonData {
-        table_name: "test_table".to_string(),
-        table_columns: vec![
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "name".to_string(),
-            },
-            TableColumn {
-                data_type: "int".to_string(),
-                column_name: "age".to_string(),
-            },
-        ],
-        table_rows: vec![
-            vec![json!("Alice"), json!(30)],
-            vec![json!("Bob"), json!(25)],
-        ],
-    };
-
-    assert!(validate_row_column_count(&data));
-}
-
-#[test]
-fn test_validate_column_count_failure() {
-    let data = JsonData {
-        table_name: "test_table".to_string(),
-        table_columns: vec![
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "name".to_string(),
-            },
-            TableColumn {
-                data_type: "int".to_string(),
-                column_name: "age".to_string(),
-            },
-        ],
-        table_rows: vec![
-            vec![json!("Alice"), json!(30)],
-            vec![json!("Bob")], // カラム数が一致しない
-        ],
-    };
-
-    assert!(!validate_row_column_count(&data));
-}
-
 /// JSONファイルのカラムのデータ型が、許可されたデータ型であるかを検証する
 ///
 pub fn validate_columns_data_type(data: &JsonData) -> bool {
@@ -207,88 +136,6 @@ pub fn validate_columns_data_type(data: &JsonData) -> bool {
     }
     true
 }
-#[test]
-fn test_validate_columns_data_type_success() {
-    let data = JsonData {
-        table_name: "test_table".to_string(),
-        table_columns: vec![
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "name".to_string(),
-            },
-            TableColumn {
-                data_type: "int".to_string(),
-                column_name: "age".to_string(),
-            },
-            TableColumn {
-                data_type: "float".to_string(),
-                column_name: "salary".to_string(),
-            },
-            TableColumn {
-                data_type: "date".to_string(),
-                column_name: "birth_date".to_string(),
-            },
-        ],
-        table_rows: vec![
-            vec![
-                serde_json::json!("Alice"),
-                serde_json::json!(30),
-                serde_json::json!(50000.0),
-                serde_json::json!("1990-01-01"),
-            ],
-            vec![
-                serde_json::json!("Bob"),
-                serde_json::json!(25),
-                serde_json::json!(60000.0),
-                serde_json::json!("1995-05-15"),
-            ],
-        ],
-    };
-
-    assert!(validate_columns_data_type(&data));
-}
-
-#[test]
-fn test_validate_columns_data_type_failure() {
-    let data = JsonData {
-        table_name: "test_table".to_string(),
-        table_columns: vec![
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "name".to_string(),
-            },
-            TableColumn {
-                data_type: "int".to_string(),
-                column_name: "age".to_string(),
-            },
-            TableColumn {
-                data_type: "double".to_string(),
-                column_name: "salary".to_string(),
-            }, // 不正なデータ型
-            TableColumn {
-                data_type: "date".to_string(),
-                column_name: "birth_date".to_string(),
-            },
-        ],
-        table_rows: vec![
-            vec![
-                serde_json::json!("Alice"),
-                serde_json::json!(30),
-                serde_json::json!(50000.0),
-                serde_json::json!("1990-01-01"),
-            ],
-            vec![
-                serde_json::json!("Bob"),
-                serde_json::json!(25),
-                serde_json::json!(60000.0),
-                serde_json::json!("1995-05-15"),
-            ],
-        ],
-    };
-
-    assert!(!validate_columns_data_type(&data));
-}
-
 /// JSONファイルに設定されたインサート用のSQLデータを読み込む関数
 ///
 /// JSONファイルのデータ構造は以下の通りである
@@ -324,38 +171,196 @@ pub fn read_json_file(file_path: &str) -> Result<JsonData, Box<dyn Error>> {
     Ok(data)
 }
 
-#[test]
-fn test_read_json_file() {
-    let file_path = "test/test.json";
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
 
-    let expected_data = JsonData {
-        table_name: "test_table".to_string(),
-        table_columns: vec![
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "name".to_string(),
-            },
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "type".to_string(),
-            },
-            TableColumn {
-                data_type: "string".to_string(),
-                column_name: "brand".to_string(),
-            },
-        ],
-        table_rows: vec![
-            vec![json!("Ryzen 9 5900X"), json!("CPU"), json!("AMD")],
-            vec![json!("GeForce RTX 3080"), json!("GPU"), json!("NVIDIA")],
-            vec![
-                json!("Samusung 970 EVO SSD"),
-                json!("SSD"),
-                json!("Samsung"),
+    #[test]
+    fn test_read_json_file() {
+        let file_path = "test/test.json";
+
+        let expected_data = JsonData {
+            table_name: "test_table".to_string(),
+            table_columns: vec![
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "name".to_string(),
+                },
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "type".to_string(),
+                },
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "brand".to_string(),
+                },
             ],
-        ],
-    };
+            table_rows: vec![
+                vec![json!("Ryzen 9 5900X"), json!("CPU"), json!("AMD")],
+                vec![json!("GeForce RTX 3080"), json!("GPU"), json!("NVIDIA")],
+                vec![
+                    json!("Samusung 970 EVO SSD"),
+                    json!("SSD"),
+                    json!("Samsung"),
+                ],
+            ],
+        };
 
-    let result = read_json_file(&file_path).unwrap();
+        let result = read_json_file(&file_path).unwrap();
 
-    assert_eq!(result, expected_data);
+        assert_eq!(result, expected_data);
+    }
+
+    #[test]
+    fn test_validate_columns_data_type_failure() {
+        let data = JsonData {
+            table_name: "test_table".to_string(),
+            table_columns: vec![
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "name".to_string(),
+                },
+                TableColumn {
+                    data_type: "int".to_string(),
+                    column_name: "age".to_string(),
+                },
+                TableColumn {
+                    data_type: "double".to_string(),
+                    column_name: "salary".to_string(),
+                }, // 不正なデータ型
+                TableColumn {
+                    data_type: "date".to_string(),
+                    column_name: "birth_date".to_string(),
+                },
+            ],
+            table_rows: vec![
+                vec![
+                    serde_json::json!("Alice"),
+                    serde_json::json!(30),
+                    serde_json::json!(50000.0),
+                    serde_json::json!("1990-01-01"),
+                ],
+                vec![
+                    serde_json::json!("Bob"),
+                    serde_json::json!(25),
+                    serde_json::json!(60000.0),
+                    serde_json::json!("1995-05-15"),
+                ],
+            ],
+        };
+
+        assert!(!validate_columns_data_type(&data));
+    }
+
+    #[test]
+    fn test_create_json_file() {
+        let test_file_path = "test_output.json";
+
+        create_template_json_file(&test_file_path).expect("Failed to create JSON file");
+
+        let json_content = fs::read_to_string(test_file_path).expect("Failed to read JSON file");
+
+        let expected_data = JsonData {
+            table_name: String::new(),
+            table_columns: vec![TableColumn {
+                data_type: "".to_string(),
+                column_name: "".to_string(),
+            }],
+            table_rows: Vec::new(),
+        };
+        let expected_json =
+            to_string_pretty(&expected_data).expect("Failed to serialize expected data");
+
+        assert_eq!(json_content, expected_json);
+
+        fs::remove_file(test_file_path).expect("Failed to delete test file");
+    }
+
+    #[test]
+    fn test_validate_columns_data_type_success() {
+        let data = JsonData {
+            table_name: "test_table".to_string(),
+            table_columns: vec![
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "name".to_string(),
+                },
+                TableColumn {
+                    data_type: "int".to_string(),
+                    column_name: "age".to_string(),
+                },
+                TableColumn {
+                    data_type: "float".to_string(),
+                    column_name: "salary".to_string(),
+                },
+                TableColumn {
+                    data_type: "date".to_string(),
+                    column_name: "birth_date".to_string(),
+                },
+            ],
+            table_rows: vec![
+                vec![
+                    serde_json::json!("Alice"),
+                    serde_json::json!(30),
+                    serde_json::json!(50000.0),
+                    serde_json::json!("1990-01-01"),
+                ],
+                vec![
+                    serde_json::json!("Bob"),
+                    serde_json::json!(25),
+                    serde_json::json!(60000.0),
+                    serde_json::json!("1995-05-15"),
+                ],
+            ],
+        };
+
+        assert!(validate_columns_data_type(&data));
+    }
+
+    #[test]
+    fn test_validate_column_count() {
+        let data = JsonData {
+            table_name: "test_table".to_string(),
+            table_columns: vec![
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "name".to_string(),
+                },
+                TableColumn {
+                    data_type: "int".to_string(),
+                    column_name: "age".to_string(),
+                },
+            ],
+            table_rows: vec![
+                vec![json!("Alice"), json!(30)],
+                vec![json!("Bob"), json!(25)],
+            ],
+        };
+
+        assert!(validate_row_column_count(&data));
+    }
+
+    #[test]
+    fn test_validate_column_count_failure() {
+        let data = JsonData {
+            table_name: "test_table".to_string(),
+            table_columns: vec![
+                TableColumn {
+                    data_type: "string".to_string(),
+                    column_name: "name".to_string(),
+                },
+                TableColumn {
+                    data_type: "int".to_string(),
+                    column_name: "age".to_string(),
+                },
+            ],
+            table_rows: vec![
+                vec![json!("Alice"), json!(30)],
+                vec![json!("Bob")], // カラム数が一致しない
+            ],
+        };
+
+        assert!(!validate_row_column_count(&data));
+    }
 }
