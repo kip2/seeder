@@ -23,6 +23,12 @@ pub struct JsonData {
     pub table_rows: Vec<Vec<Value>>,
 }
 
+/// カラムを定義したJSONファイルから、カラムに紐づくランダムなデータの生成を行う
+///
+/// # Arguments
+///
+/// * `file_path` - カラムを定義したJSONファイルのパス
+/// * `n` - 生成したいデータ数
 pub fn generate_random_data(file_path: &str, n: usize) -> JsonData {
     let mut data = read_json_file(file_path).unwrap();
 

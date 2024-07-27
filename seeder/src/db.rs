@@ -33,6 +33,8 @@ pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// データをランダムに生成して、DBにインサートする処理を行う
+///
 pub async fn insert_random_data(file_path: &String, n: usize) -> Result<(), Box<dyn Error>> {
     let pool = generate_db_connection().await;
 
