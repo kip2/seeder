@@ -45,6 +45,28 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
 }
 
 async fn run_insert_random_data(args: &Vec<String>) -> Result<(), Box<dyn Error>> {
+    let file_path = &args[0];
+    let n: usize = args[1].parse().map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Invalid number format for random data entries",
+        )
+    })?;
+
+    println!("===========");
+    println!(
+        "Starting random data insert execution for file: {}",
+        &file_path
+    );
+
+    insert_random_data(&file_path, n).await?;
+
+    println!(
+        "Finished random data insert execution for file: {}",
+        &file_path
+    );
+    println!("===========");
+
     Ok(())
 }
 
