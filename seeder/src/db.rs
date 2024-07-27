@@ -1,15 +1,13 @@
 use crate::json::*;
 use dotenv::dotenv;
 use serde_json::Value;
-use sqlx::{PgPool, Transaction};
+use sqlx::{PgPool, Pool, Postgres, Transaction};
 use std::{env, error::Error};
 
 /// ファイルパスに記載されたseed用のデータで、INSERT処理を実行する
 ///
 pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
-    dotenv().expect("Failed to read .env file");
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPool::connect(&database_url).await.unwrap();
+    let pool = generate_db_connection().await;
 
     let data = read_json_file(file_path).unwrap();
 
@@ -35,7 +33,21 @@ pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// JSONファイルに定義したクエリデータを受け取り、INSERT処理を行う
+pub async fn insert_random_data(file_path: &String) -> Result<(), Box<dyn Error>> {
+    Ok(())
+}
+
+/// DBコネクションを生成する処理を行う
+///
+async fn generate_db_connection() -> Pool<Postgres> {
+    dotenv().expect("Failed to read .env file");
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = PgPool::connect(&database_url).await.unwrap();
+
+    pool
+}
+
+/// クエリ用のデータが定義されたJsonDataを受け取り、INSERT処理を行う
 ///
 /// ## 備忘
 ///
