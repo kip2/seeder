@@ -40,7 +40,13 @@ pub async fn insert_random_data(file_path: &String, n: usize) -> Result<(), Box<
 
     let data = generate_random_data(&file_path, n);
 
-    // todo: validation
+    // validation
+    if !validate_columns_data_type(&data) {
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Invalid data type found in table columns",
+        )));
+    }
 
     let mut transaction = pool.begin().await.unwrap();
 
