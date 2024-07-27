@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::error::Error;
 
-use crate::db::insert;
+use crate::db::{insert, insert_random_data};
 
 #[derive(Debug, Parser)]
 pub struct Args {
@@ -12,6 +12,14 @@ pub struct Args {
         num_args = 1..
     )]
     file_paths: Vec<String>,
+
+    #[arg(
+        short = 'r',
+        long = "random",
+        help = "File path and number of random data entries",
+        value_names = &["FILE_PATH", "NUMBER"]
+    )]
+    random: Option<Vec<String>>,
 }
 
 /// コンソール処理を実行する
@@ -19,8 +27,24 @@ pub struct Args {
 pub async fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
-    // run insert
-    run_queries(&args).await?;
+    if args.file_paths.len() > 0 {
+        // run insert
+        run_queries(&args).await?;
+    } else if let Some(random_args) = args.random {
+        if random_args.len() == 2 {
+            // run insert random data
+            run_insert_random_data(&random_args).await?;
+        } else {
+            return Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "The --random option requires exactly 2 arguments: <file_path> and <number>",
+            )));
+        }
+    }
+    Ok(())
+}
+
+async fn run_insert_random_data(args: &Vec<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
