@@ -6,7 +6,7 @@ use std::{env, error::Error};
 
 /// ファイルパスに記載されたseed用のデータで、INSERT処理を実行する
 ///
-pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
+pub async fn insert(file_path: &str) -> Result<(), Box<dyn Error>> {
     let pool = generate_db_connection().await;
 
     let data = read_json_file(file_path).unwrap();
@@ -35,7 +35,7 @@ pub async fn insert(file_path: &String) -> Result<(), Box<dyn Error>> {
 
 /// データをランダムに生成して、DBにインサートする処理を行う
 ///
-pub async fn insert_random_data(file_path: &String, n: usize) -> Result<(), Box<dyn Error>> {
+pub async fn insert_random_data(file_path: &str, n: usize) -> Result<(), Box<dyn Error>> {
     let pool = generate_db_connection().await;
 
     let data = generate_random_data(&file_path, n);
