@@ -52,7 +52,7 @@ DATABASE_URL=postgres://username:password@hostname:port/db_name
 
 DBへテーブルが登録されているのが前提となります。
 
-テーブル登録については、(migrate)[https://github.com/kip2/migrate]を使用すると良いでしょう。
+テーブル登録については、[migrate](https://github.com/kip2/migrate)を使用すると良いでしょう。
 
 登録されたテーブル情報を、.envのDBのアクセス設定に含めてください。
 
