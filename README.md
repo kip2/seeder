@@ -1,128 +1,123 @@
-# Seeder
+[English](README.md) | [日本語](README-ja.md)
 
-コンソールで実行できる、シンプルなシーダーアプリケーションです。
+<h1 align="center"> seeder </h1>
 
-シーダーアプリとは、テーブルにデータを登録するためのアプリケーションのことです。
+Seeder is a simple application that can be run from the console to populate tables with data.
 
-このアプリケーションでは、別ファイルに定義したデータを、テーブルに一気に登録する機能を持っています。
+A seeder application is used to insert data into tables. This application can register data defined in separate files into tables all at once. It can also insert a specified number of random data entries, which is useful for setting up test environments.
 
-また、指定した数のランダムなデータを登録することも可能です。
-テスト環境の構築等に使用することができます。
+## Prerequisites
 
-## 前提
+- This application is intended for use with PostgreSQL.
+- Database connection information should be set in a .env file.
+- The application is not distributed as a binary file, so you need to build it in your own environment.
 
-- 本アプリケーションはPostgreSQLでの使用が前提となっています。
-- DB接続情報は、.envに設定して行います。
-- バイナリファイルの形では配布していませんので、各自の環境でビルドを行ってください。
+# Environment Setup
 
-# 環境設定
+## How to Build
 
-## ビルドの方法
-
-Rustのインストールされた環境で、以下のコマンドを実行します。
+In an environment with Rust installed, run the following command:
 
 ```shell
 cargo build --release
 ```
 
-ビルドされた実行ファイルをディレクトリに配置してください。
+Place the built executable file in the desired directory.
 
-ビルドされたファイルは以下のパスに生成されます。
+The built file will be generated at the following path:
 
 ```shell
-./target/release/migrate
+./target/release/seeder
 ```
 
-## DBのアクセス設定
+## Database Access Configuration
 
-事前のDBアクセス情報の設定が必要になります。
+You need to configure database access information beforehand.
 
-設定は以下の手順で行ってください。
+Follow these steps to set it up:
 
-1. .envファイルをビルドしたmigrateと同じディレクトリに配置する。
-2. .envファイルに以下の形式で、DBアクセス設定を記入しください。
+1. Place a .env file in the same directory as the built seeder executable.
+2. Write the database access settings in the .env file in the following format:
 
 ```env
 DATABASE_URL=postgres://username:password@hostname:port/db_name
 ```
 
-# 事前準備
+# Preparation
 
-## 準備の前提
+## Prerequisites for Preparation
 
-DBへテーブルが登録されているのが前提となります。
+Tables must already be registered in the database.
 
-テーブル登録については、[migrate](https://github.com/kip2/migrate)を使用すると良いでしょう。
+For table registration, you may find [migrate](https://github.com/kip2/migrate) useful.
 
-登録されたテーブル情報を、.envのDBのアクセス設定に含めてください。
+Include the registered table information in the database access settings in the .env file.
 
-.envの形式を再掲します。
+Here is the format for the .env file:
+
 ```env
 DATABASE_URL=postgres://username:password@hostname:port/db_name
 ```
 
 ---
 
-# 実行方法
+# How to Use
 
-## 利用可能なコマンドについてまとめ
+## Summary of Available Commands
 
-以下のコマンドが使用可能です。
-
-詳細な利用方法の解説は別の項で解説します。
+The following commands are available. Detailed usage explanations are provided in separate sections.
 
 ```sh
-# ファイルを指定して、テーブルへのデータ登録を実行
-# file-path: 登録したいデータが設定されたファイルのパス
-./seeder -f <file-path1>
-# 複数ファイルでの登録も対応しています
+# Insert data into tables from specified files
+# file-path: Path to the file containing the data to be inserted
+./seeder -f <file-path>
+# Multiple files are also supported
 ./seeder -f <file-path1> <file-path2>
 
-# ランダムなデータを登録する
-# file-path: 登録対象のテーブルのカラム情報が設定されたファイルのパス
-# n: 登録したいランダムデータの個数
+# Insert random data into tables
+# file-path: Path to the file containing the column information of the target table
+# n: Number of random data entries to generate
 ./seeder -r <file-path> <n>
 
-# -f -r どちらのコマンドでも利用されるJSONファイルの、テンプレートを生成するオプション
-# file-path: テンプレートを生成する先のファイルパス
+# Generate a template for the JSON file used with both -f and -r options
+# file-path: Path where the template file will be generated
 ./seeder -c <file-path>
-
 ```
 
 ---
 
-## テーブルへのデータの登録方法(-fオプション)
+## Inserting Data into Tables (-f Option)
 
-テーブルへのデータの登録は、あらかじめJSONファイルに定義したデータを用いて行います。
+Data insertion into tables is done using predefined data in JSON files.
 
-そのため、以下2つの手順が必要になります。
+There are two steps required:
 
-- ファイルの準備
-- コマンドの実行
+- Preparing the file
+- Executing the command
 
-### ファイルの準備
+### Preparing the File
 
-登録したいデータをJSONファイルに定義してください。
+Define the data to be inserted in a JSON file.
 
-なお、JSONファイルのテンプレートを生成するコマンドも用意しています。
+A command to generate a template JSON file is also provided.
 
 ```sh
-# 指定したパスに、テンプレートJSONファイルを生成する
-# file-path: テンプレートを生成する先のファイルパス
+# Generate a template JSON file at the specified path
+# file-path: Path where the template file will be generated
 ./seeder -c <file-path>
 ```
 
-作成したテンプレートファイルに、各種の情報を記載します。
+Fill in the necessary information in the generated template file.
 
-以下の点に注意して記載してください
+Keep in mind the following:
 
-- 使用できる`data_type`は以下の4つ。
+- The available `data_type` values are:
   - `int`
   - `float`
   - `string`
   - `date` 
 
-JSONファイルの定義例は以下のようになります。
+Here is an example of a JSON file definition:
 
 ```json
 {
@@ -130,72 +125,71 @@ JSONファイルの定義例は以下のようになります。
     "table_columns": [
         {
             "data_type": "string",
-            "column_name": "name",
+            "column_name": "name"
         },
         {
             "data_type": "int",
             "column_name": "lifespan"
         }
-    ]
-    ,
+    ],
     "table_rows": [
         [
             "Ryzen 9 5900X",
             5
-        ],
+        ]
     ]
 }
 ```
 
-### コマンドの実行
+### Executing the Command
 
-登録したいデータの定義ファイルが用意できたら、あとはコマンドを実行するだけです。
-なお、複数ファイルの実行も可能です。
+Once you have prepared the definition file, execute the command.
+
+You can also execute multiple files.
+
 ```sh
-# file-path: 登録したいデータが設定されたファイルのパス
+# file-path: Path to the file containing the data to be inserted
 ./seeder -f <file-path>
 
-# 複数ファイルでの登録も対応しています
+# Multiple files are also supported
 ./seeder -f <file-path1> <file-path2>
 ```
 
 ---
 
-## ランダムデータの登録(-rオプション)
+## Inserting Random Data (-r Option)
 
-テスト用などに、テーブルへランダムデータを複数件、登録することが可能です。
+It is possible to insert multiple random data entries into tables, useful for testing purposes.
 
-そのため、以下2つの手順が必要になります。
+There are two steps required:
 
-- ファイルの準備
-- コマンドの実行
+- Preparing the file
+- Executing the command
 
-### ファイルの準備
+### Preparing the File
 
-登録したいテーブルのカラムの情報を定義する必要があります。
+Define the column information of the target table in a JSON file.
 
-登録したいテーブルのカラム情報の定義をJSONファイルに記載してください。
-
-なお、JSONファイルのテンプレートを生成するコマンドも用意しています。
+A command to generate a template JSON file is also provided.
 
 ```sh
-# 指定したパスに、テンプレートJSONファイルを生成する
-# file-path: テンプレートを生成する先のファイルパス
+# Generate a template JSON file at the specified path
+# file-path: Path where the template file will be generated
 ./seeder -c <file-path>
 ```
 
-作成したテンプレートファイルに、カラムの情報を記載します。
+Fill in the necessary column information in the generated template file.
 
-以下の点に注意して記載してください
+Keep in mind the following:
 
-- 使用できる`data_type`は以下の4つ。
+- The available `data_type` values are:
   - `int`
   - `float`
   - `string`
   - `date` 
-- "table_rows"の項目は空になっていますが、実行時に必要のため、そのまま残して下さい。
+- Leave the "table_rows" field empty, as it will be used during execution.
 
-JSONファイルの定義例は以下のようになります。
+Here is an example of a JSON file definition:
 
 ```json
 {
@@ -203,65 +197,54 @@ JSONファイルの定義例は以下のようになります。
     "table_columns": [
         {
             "data_type": "string",
-            "column_name": "name",
+            "column_name": "name"
         },
         {
             "data_type": "int",
             "column_name": "lifespan"
         }
-    ]
-    ,
-    "table_rows": [
-    ]
+    ],
+    "table_rows": []
 }
 ```
 
-### コマンドの実行
+### Executing the Command
 
-JSONファイルが用意できたら、コマンドを実行してください。
+Once you have prepared the JSON file, execute the command.
 
-コマンドには、
-
-- カラムデータを定義したファイルのパス
-- 生成したいランダムデータの個数
-
-を含めてください。
-
+Include the path to the file defining the column data and the number of random data entries to generate.
 
 ```sh
-# file-path: 登録対象のテーブルのカラム情報が設定されたファイルのパス
-# n: 登録したいランダムデータの個数
+# file-path: Path to the file containing the column information of the target table
+# n: Number of random data entries to generate
 ./seeder -r <file-path> <n>
 ```
 
 ---
 
-## テンプレートファイルの作成(-cオプション)
+## Creating Template Files (-c Option)
 
-seeder実行にあたって必要なファイルの、テンプレートファイルを生成するコマンドです。
+This command generates template files required for running the seeder.
 
--f -r オプションのどちらでも利用するJSONファイルを生成します。
-
-以下のコマンドを実行後、-f -rで必要な情報を記載してください。
+Run the following command, and then fill in the necessary information for either the -f or -r option.
 
 ```sh
-# 指定したパスに、テンプレートJSONファイルを生成する
-# file-path: テンプレートを生成する先のファイルパス
+# Generate a template JSON file at the specified path
+# file-path: Path where the template file will be generated
 ./seeder -c <file-path>
 ```
 
 ---
 
-# help
+# Help
 
-コマンドについて困ったときは、ヘルプを参照してください。
+If you need help with the commands, refer to the help options.
 
-以下のコマンドでヘルプが参照できます。
+You can access the help with the following commands:
 
 ```sh
 ./seeder -h
 
-# もしくは
+# Or
 ./seeder --help
 ```
-
