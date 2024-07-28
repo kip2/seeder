@@ -27,7 +27,8 @@ pub struct Args {
     #[arg(
         short = 'c',
         long = "create",
-        help = "Create a new JSON file with the specified structure."
+        help = "Create a new JSON file with the specified structure.",
+        value_names = [&"FILE_PATH"]
     )]
     create: Option<String>,
 }
